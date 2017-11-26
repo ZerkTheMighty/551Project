@@ -2,7 +2,6 @@ cvxopt==1.1.9
 cycler==0.10.0
 matplotlib==1.5.1
 numpy==1.11.0
-PyMF==0.3
 pyparsing==2.2.0
 python-dateutil==2.6.1
 pytz==2017.2
