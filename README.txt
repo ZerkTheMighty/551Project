@@ -1,12 +1,15 @@
-Installation notes
-#################
-#Get the package
-git clone https://github.com/cthurau/pymf.git
+##############
+PYTHON VERSION
+##############
+2.7.12
 
-#Try to download the dependencies
-cd pymf
-python setup.py install
+###############
+DEPENDENCIES
+###############
+#I ran into trouble installing cvxopt, so I ended up using pip, and have saved all the needed modules a requirments file
+pip install -r requirements.txt
 
-#I ran into an error trying to install cvxopt, so I installed a binary version with pip and reran setup.py
-pip install cvxopt
-#Alternative ways to install can be found here: http://cvxopt.org/install/index.html
+#I'm using virtual environments to keep dependencies between projects separate: https://virtualenv.pypa.io/en/stable/
+#Might be worth looking into, though YMMV
+
+#You can also specify which version of python you want the envrionment to use: https://stackoverflow.com/questions/1534210/use-different-python-version-with-virtualenv
