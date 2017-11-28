@@ -77,4 +77,4 @@ if __name__ == '__main__':
         learner.reset(parameters[bestparams])
         print ('Best parameters for ' + learnername + ': ' + str(learner.getparams()))
         print ('Average error for ' + learnername + ': ' + str(besterror) + ' +- ' + str(np.std(errors[learnername][bestparams,:])/math.sqrt(numruns)))
-        print('Standard Error for ' + learnername + ': ' + str(standard_error))
+        print('Standard Error for ' + learnername + ': ' + str(best_standard_error))
