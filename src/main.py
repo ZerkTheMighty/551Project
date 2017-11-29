@@ -4,8 +4,6 @@ import random
 import math
 import numpy as np
 import dataloader as dtl
-import classalgorithms as algs
-
 
 def getaccuracy(ytest, predictions):
     correct = 0
@@ -18,31 +16,14 @@ def geterror(ytest, predictions):
     return (100.0-getaccuracy(ytest, predictions))
 
 if __name__ == '__main__':
-    trainsize = 5000
-    testsize = 5000
-    numruns = 5
+    trainsize = 125
+    testsize = 40
+    num_algs = 3
+    num_factors = 36
 
-    classalgs = {'Random': algs.Classifier(),
-                 'Naive Bayes': algs.NaiveBayes({'usecolumnones': False}),
-                 'Naive Bayes Ones': algs.NaiveBayes({'usecolumnones': True}),
-                 'Linear Regression': algs.LinearRegressionClass({'regularizer': 'l2', 'regwgt': 0.0}),
-                 'Logistic Regression': algs.LogitReg({'regularizer': 'l2', 'regwgt': 0.0}),
-                'Neural Network': algs.NeuralNet({'epochs': 150, 'transfer': 'sigmoid', 'stepsize': 0.1, 'nh': 32}),
-                }
-    numalgs = len(classalgs)
-
-    parameters = (
-        {'regwgt': 0.0, 'nh': 32}, #These are the best parameters for logistic regression and neural networks, respectively.
-     )
-
-    numparams = len(parameters)
-
-    errors = {}
-    for learnername in classalgs:
-        errors[learnername] = np.zeros((numparams,numruns))
-
-    for r in range(numruns):
-        trainset, testset = dtl.load_susy(trainsize,testsize)
+    #TODO: Look into if we want multiple runs and how to set random seed properly if needed
+    trainset, testset = dtl.load_nerve_data(trainsize, testsize)
+    for alg in range(num_algs):
 
         print(('Running on train={0} and test={1} samples for run {2}').format(trainset[0].shape[0], testset[0].shape[0],r))
 
