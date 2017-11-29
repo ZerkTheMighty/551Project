@@ -1,3 +1,6 @@
+#Refrain from tracking the datasets so we don't actually push them to the repo
+datasets/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
