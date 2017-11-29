@@ -34,13 +34,19 @@ if __name__ == '__main__':
     trainsize = 125
     testsize = 40
     num_factors = 36 #Including the binary arm/leg distinction where 1 = leg and 0 = arm
+    graph_colours = ['r', 'g', 'b']
+    graph_titles = ['Test set contains missing values', "Test set without missing values", "Full Test set"]
     #TODO: aa and kmeans are throwing errors when attempting to run it; look into this later
-    algs = ['pca', 'cmeans']
+    algs = ['pca']
     num_algs = len(algs)
+    num_costs = 3
+    alg_costs = [[[] for cost in range(num_algs)] for alg in range(num_costs)]
+
     #Corresponds to temperature and age, respectively
     float_to_int_idxs = [7, 13]
     #Corresponds to sex and nerve type (leg or arm), respectively
     float_to_binary_idxs = [14, 35]
+
 
     #TODO: Delete data properly in the test set (make sure it is representative of the proportions in the original data set)
     #NOTE: Based on the documentation in the class it looks like W is the dictionary, and H is the samples
@@ -52,7 +58,7 @@ if __name__ == '__main__':
             print(('Running on train={0} and test={1} samples for algorithm: {2}, with {3} factors').format(trainset.shape[0], testset.shape[0], cur_alg, k))
 
             if cur_alg == 'pca':
-                cur_mdl = pca.PCA(np.transpose(all_data), num_bases=36)
+                cur_mdl = pca.PCA(np.transpose(all_data), num_bases=k)
                 cur_mdl.factorize()
             elif cur_alg == 'cmeans':
                 cur_mdl = cmeans.Cmeans(np.transpose(all_data), num_bases=k)
@@ -71,34 +77,39 @@ if __name__ == '__main__':
 
 
             #print(np.transpose(all_data)[7, :])
-            print(np.transpose(all_data)[13, :])
+            #print(np.transpose(all_data)[13, :])
             #print(np.transpose(all_data)[14, :])
             #print(np.transpose(all_data)[35, :])
 
             X_hat = np.dot(cur_mdl.W, cur_mdl.H)
             #Round certain features as appropriate after factorizing
             #print(X_hat[7, :])
-            print(X_hat[13, :])
+            #print(X_hat[13, :])
             #print(X_hat[14, :])
             #print(X_hat[35, :])
             sanitize_features(X_hat, float_to_int_idxs, float_to_binary_idxs)
             #print(X_hat[7, :])
-            print(X_hat[13, :])
+            #print(X_hat[13, :])
             #print(X_hat[14, :])
             #print(X_hat[35, :])
-            exit()
 
-            #TODO: Compute the relevant costs and store them for plotting
-            # if cur_alg == 'svd':
-            #     break
+            #TODO: Compute the relevant costs and store them for plotting:
+            #Need to ensure that the score for the sanitized X is used: currently uses just the forbenius norm of the unsanitized matrix
+            for i in range(num_costs):
+                # print(cur_mdl.W.shape)
+                # print(cur_mdl.H.shape)
+                # print(np.dot(cur_mdl.W, cur_mdl.H))
+                #TODO: This is returning a matrix for cmeans for some reason...look into this
+                alg_costs[i][alg].append(cur_mdl.ferr)
 
-    #TODO: Modify this to appropriately plot the results
-    # print "\nPlotting the results..."
-    # plt.ylabel('K Factors')
-    # plt.xlabel("Cost")
-    # plt.axis([1, num_episodes, 0, 1])
-    # for i in range(len(avg_results)):
-    #     plt.plot([episode for episode in range(num_episodes)], avg_results[i], GRAPH_COLOURS[i], label="Alpha = " + str(ALPHAS[i]) + " AGENT = " + str(AGENTS[i]))
-    # plt.legend(loc='center', bbox_to_anchor=(0.60,0.90))
-    # plt.show()
-    # print "\nFinished!"
+    print("Plotting the results...")
+    for i in range(num_costs):
+        plt.title(graph_titles[i])
+        plt.ylabel('Cost')
+        plt.xlabel("Num Factors")
+        plt.axis([1, num_factors, 0, 300])
+        for j in range(num_algs):
+             plt.plot([factor for factor in range(num_factors)], alg_costs[i][j], graph_colours[j], label="ALGO = {0}".format(algs[j]))
+        plt.legend(loc='center', bbox_to_anchor=(0.60,0.90))
+        plt.show()
+    print("Finished!")
