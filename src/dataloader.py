@@ -8,7 +8,7 @@ def load_nerve_data(trainsize, testsize):
     filename = '../datasets/nerveData.csv'
     dataset = loadcsv(filename)
     trainset, testset = splitdataset(dataset, trainsize, testsize, outputfirst=True)
-    return trainset, testset
+    return dataset, trainset, testset
 
 ####### Helper functions
 def loadcsv(filename):

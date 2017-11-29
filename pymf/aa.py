@@ -5,7 +5,7 @@ PyMF Archetypal Analysis [1]
 
     AA: class for Archetypal Analysis
 
-[1] Cutler, A. Breiman, L. (1994), "Archetypal Analysis", Technometrics 36(4), 
+[1] Cutler, A. Breiman, L. (1994), "Archetypal Analysis", Technometrics 36(4),
 338-347.
 """
 import numpy as np
@@ -31,7 +31,7 @@ class AA(PyMFBase):
         the input data
     num_bases: int, optional
         Number of bases to compute (column rank of W and row rank of H).
-        4 (default)       
+        4 (default)
 
     Attributes
     ----------
@@ -39,8 +39,8 @@ class AA(PyMFBase):
     H : "num bases x num_samples" matrix of coefficients
     beta : "num_bases x num_samples" matrix of basis vector coefficients
         (for constructing W s.t. W = beta * data.T )
-    ferr : frobenius norm (after calling .factorize()) 
-        
+    ferr : frobenius norm (after calling .factorize())
+
     Example
     -------
     Applying AA to some rather stupid data set:
@@ -48,13 +48,13 @@ class AA(PyMFBase):
     >>> import numpy as np
     >>> from aa import AA
     >>> data = np.array([[1.0, 0.0, 2.0], [0.0, 1.0, 1.0]])
-    
+
     Use 2 basis vectors -> W shape(data_dimension, 2).
-    
+
     >>> aa_mdl = AA(data, num_bases=2)
 
-    Set number of iterations to 5 and start computing the factorization.    
-    
+    Set number of iterations to 5 and start computing the factorization.
+
     >>> aa_mdl.factorize(niter=5)
 
     The basis vectors are now stored in aa_mdl.W, the coefficients in aa_mdl.H.
@@ -66,7 +66,7 @@ class AA(PyMFBase):
     >>> aa_mdl = AA(data, num_bases=2)
     >>> aa_mdl.W = W
     >>> aa_mdl.factorize(niter=5, compute_w=False)
-    
+
     The result is a set of coefficients aa_mdl.H, s.t. data = W * aa_mdl.H.
     """
     # set cvxopt options
@@ -75,16 +75,16 @@ class AA(PyMFBase):
     def _init_h(self):
         """ Initialize H s.t. columns sum to 1.
         """
-        self.H = np.random.random((self._num_bases, self._num_samples))     
+        self.H = np.random.random((self._num_bases, self._num_samples))
         self.H /= self.H.sum(axis=0)
-            
+
     def _init_w(self):
         """ Initialize W s.t. beta sums to 1 and W is set to random value.
         """
         self.beta = np.random.random((self._num_bases, self._num_samples))
         self.beta /= self.beta.sum(axis=0)
-        self.W = np.dot(self.beta, self.data.T).T            
-        self.W = np.random.random((self._data_dimension, self._num_bases))        
+        self.W = np.dot(self.beta, self.data.T).T
+        self.W = np.random.random((self._data_dimension, self._num_bases))
 
     def _update_h(self):
         """ alternating least squares step, update H enforcing a convexity
@@ -103,9 +103,9 @@ class AA(PyMFBase):
         INQa = base.matrix(-np.eye(self._num_bases))
         INQb = base.matrix(0.0, (self._num_bases,1))
         EQa = base.matrix(1.0, (1, self._num_bases))
-        
+
         for i in xrange(self._num_samples):
-            update_single_h(i)        
+            update_single_h(i)
 
     def _update_w(self):
         """ alternating least squares step, update W enforcing a convexity
@@ -127,13 +127,13 @@ class AA(PyMFBase):
         EQa = base.matrix(1.0, (1, self._num_samples))
 
         for i in xrange(self._num_bases):
-            update_single_w(i)            
+            update_single_w(i)
 
         self.W = np.dot(self.beta, self.data.T).T
 
 def _test():
     import doctest
     doctest.testmod()
- 
+
 if __name__ == "__main__":
     _test()
