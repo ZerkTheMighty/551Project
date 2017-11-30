@@ -35,7 +35,7 @@ if __name__ == '__main__':
     testsize = 40
     num_factors = 36 #Including the binary arm/leg distinction where 1 = leg and 0 = arm
     graph_colours = ['r', 'g', 'b']
-    graph_titles = ['Test set contains missing values', "Test set without missing values", "Full Test set"]
+    graph_titles = ['Test set contains missing values', "Test set without missing values", "Full test set"]
     #TODO: aa and kmeans are throwing errors when attempting to run it; look into this later
     algs = ['pca']
     num_algs = len(algs)
@@ -75,23 +75,9 @@ if __name__ == '__main__':
             else:
                 exit("ERROR: Invalid algorithm {0} selected!!!".format(cur_alg))
 
-
-            #print(np.transpose(all_data)[7, :])
-            #print(np.transpose(all_data)[13, :])
-            #print(np.transpose(all_data)[14, :])
-            #print(np.transpose(all_data)[35, :])
-
             X_hat = np.dot(cur_mdl.W, cur_mdl.H)
             #Round certain features as appropriate after factorizing
-            #print(X_hat[7, :])
-            #print(X_hat[13, :])
-            #print(X_hat[14, :])
-            #print(X_hat[35, :])
             sanitize_features(X_hat, float_to_int_idxs, float_to_binary_idxs)
-            #print(X_hat[7, :])
-            #print(X_hat[13, :])
-            #print(X_hat[14, :])
-            #print(X_hat[35, :])
 
             #TODO: Compute the relevant costs and store them for plotting:
             #Need to ensure that the score for the sanitized X is used: currently uses just the forbenius norm of the unsanitized matrix
