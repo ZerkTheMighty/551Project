@@ -37,7 +37,7 @@ if __name__ == '__main__':
     graph_colours = ['r', 'g', 'b']
     graph_titles = ['Test set contains missing values', "Test set without missing values", "Full test set"]
     #TODO: aa and kmeans are throwing errors when attempting to run it; look into this later
-    algs = ['pca']
+    algs = ['pca', 'cmeans', 'aa']
     num_algs = len(algs)
     num_costs = 3
     alg_costs = [[[] for cost in range(num_algs)] for alg in range(num_costs)]
@@ -50,11 +50,11 @@ if __name__ == '__main__':
 
     #TODO: Delete data properly in the test set (make sure it is representative of the proportions in the original data set)
     #NOTE: Based on the documentation in the class it looks like W is the dictionary, and H is the samples
-    #so it looks like we have to transpose our data matrix: don't know how this will impact the cost function formulas
+    #so it looks like we have to transpose our data matrix: don't know how this will impact the cost function formulas as written in the draft
     all_data, trainset, testset = dtl.load_nerve_data(trainsize, testsize)
     for alg in range(num_algs):
         cur_alg = algs[alg]
-        for k in range(num_factors):
+        for k in range(1, num_factors + 1):
             print(('Running on train={0} and test={1} samples for algorithm: {2}, with {3} factors').format(trainset.shape[0], testset.shape[0], cur_alg, k))
 
             if cur_alg == 'pca':
