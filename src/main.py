@@ -36,7 +36,6 @@ if __name__ == '__main__':
     num_factors = 36 #Including the binary arm/leg distinction where 1 = leg and 0 = arm
     graph_colours = ['r', 'g', 'b']
     graph_titles = ['Test set contains missing values', "Test set without missing values", "Full test set"]
-    #TODO: aa and kmeans are throwing errors when attempting to run it; look into this later
     algs = ['pca', 'cmeans', 'aa']
     num_algs = len(algs)
     num_costs = 3
