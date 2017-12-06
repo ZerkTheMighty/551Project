@@ -31,6 +31,11 @@ def sanitize_features(X, float_to_int_idxs, float_to_binary_idxs):
 
 
 if __name__ == '__main__':
+
+
+    #plt.scatter([x for x in range(10)], np.random.rand(10), alpha=0.4)
+    #plt.show()
+
     epsilon = 1.0e-6
     train_size = 125
     test_size = 40
@@ -40,8 +45,9 @@ if __name__ == '__main__':
     graph_colours = ['r', 'g', 'b']
     algs = ['pca', 'cmeans', 'aa']
     num_algs = len(algs)
-    alg_error = [[] for alg in range(num_algs)]
-    alg_std = [[] for alg in range(num_algs)]
+    alg_errors = [[] for alg in range(num_algs)]
+    alg_error_mean = [[] for alg in range(num_algs)]
+    alg_error_std = [[] for alg in range(num_algs)]
     #To ensure re-running the experiment will yield the same results
     np.random.seed(0)
 
@@ -81,8 +87,8 @@ if __name__ == '__main__':
     #Ensure that the right features are getting thresholded to the right values
     dummy_X_hat = np.dot(cur_mdl.W, cur_mdl.H)
     sanitize_features(dummy_X_hat, float_to_int_idxs, float_to_binary_idxs)
-    assert all(map(lambda x: x % 1 == 0, dummy_X_hat[0:5, 7]))
-    assert all(map(lambda x: x % 1 == 0, dummy_X_hat[0:5, 13]))
+    assert all(map(lambda x: x % 1 == 0, dummy_X_hat[:, 7]))
+    assert all(map(lambda x: x % 1 == 0, dummy_X_hat[:, 13]))
     assert all(dummy_X_hat[:, 14]) in [0, 1]
     assert all(dummy_X_hat[:, 35]) in [0, 1]
 
@@ -103,29 +109,31 @@ if __name__ == '__main__':
 
         F = np.transpose(cur_mdl.W)
         X_hat = np.dot(np.dot(test_set_missing, np.linalg.pinv(F)), F)
-        #Threshold certain feature values  as appropriate after factorizing
+        #Threshold certain feature values as appropriate after factorizing
         sanitize_features(X_hat, float_to_int_idxs, float_to_binary_idxs)
 
         #Compute the current algorithm error across all of the samples
         cur_alg_errors = []
         for i in range(test_size):
             cur_alg_errors.append(np.linalg.norm(X_hat[i, :] - test_set[i, :], ord=2))
-        alg_error[alg] = np.mean(np.array(cur_alg_errors))
-        alg_std[alg] = np.std(np.array(cur_alg_errors))
+        alg_errors[alg] = cur_alg_errors
+        alg_error_mean[alg] = np.mean(np.array(cur_alg_errors))
+        alg_error_std[alg] = np.std(np.array(cur_alg_errors))
 
     print("Displaying the results for all algorithms...")
     for alg in range(num_algs):
-        print("Alg: {0} Error: {1} Standard Deviation: {2}").format(algs[alg], alg_error[alg], alg_std[alg])
+        print("Alg: {0} Error: {1} Standard Deviation: {2}").format(algs[alg], alg_error_mean[alg], alg_error_std[alg])
 
-    #TODO: add the dot and 3d plots
-    # print("Plotting the results...")
-    # for i in range(num_costs):
-    #     plt.title(graph_titles[i])
-    #     plt.ylabel('Cost')
-    #     plt.xlabel("Num Factors")
-    #     plt.axis([1, num_factors, 0, 300])
-    #     for j in range(num_algs):
-    #          plt.plot([factor for factor in range(num_factors)], alg_costs[i][j], graph_colours[j], label="ALGO = {0}".format(algs[j]))
-    #     plt.legend(loc='center', bbox_to_anchor=(0.60,0.90))
-    #     plt.show()
-    # print("Finished!")
+    #Set up the boxplot
+    x_vals = [[] for alg in range(num_algs)]
+    for i in range(num_algs):
+        x_vals[i] = np.random.normal(i+1, 0.04, test_size)
+    plt.boxplot(alg_errors, labels=algs)
+    plt.xlabel("Algorithm")
+    plt.ylabel("Error (per data instance)")
+
+    #Plot the scatter plot for each group, with a different colour for each
+    clevels = np.linspace(0., 1., num_algs)
+    for x, y, clevel in zip(x_vals, alg_errors, clevels):
+        plt.scatter(x, y, c=mpl.cm.prism(clevel), alpha=0.4)
+    plt.show()
