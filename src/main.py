@@ -42,6 +42,8 @@ if __name__ == '__main__':
     num_algs = len(algs)
     alg_error = [[] for alg in range(num_algs)]
     alg_std = [[] for alg in range(num_algs)]
+    #To ensure re-running the experiment will yield the same results
+    np.random.seed(0)
 
     #Indexes into the feature vector that need to be thresholded to valid Values
     #After the matrix is reconstructed
@@ -64,16 +66,25 @@ if __name__ == '__main__':
     #Thus, W * H is an m X k * k X n = m X n result, instead of the expected n X k
     #Therefore, we need to transpose our  data matrix, prior to factorizing, then
     #transpose the output back to use the formulas as writtent in our initial draft
-
-    test_set_missing = test_set[:]
-    #TODO: How do we want to represent missing data?
-    test_set_missing[rand_test_missing_indices, :] = 0
     train_set = np.transpose(train_set)
+
+    #Remove some of the data from the test set
+    test_set_missing = test_set[:]
+    #TODO: How do we want to represent missing data, just set to 0?
+    test_set_missing[rand_test_missing_indices, :] = 0
 
     #Ensure that pca is behaving as expected: that is, that the factorization error using all k factors is minimal
     cur_mdl = pca.PCA(train_set, num_bases=max_factors)
     cur_mdl.factorize()
     assert cur_mdl.ferr < epsilon
+
+    #Ensure that the right features are getting thresholded to the right values
+    dummy_X_hat = np.dot(cur_mdl.W, cur_mdl.H)
+    sanitize_features(dummy_X_hat, float_to_int_idxs, float_to_binary_idxs)
+    assert all(map(lambda x: x % 1 == 0, dummy_X_hat[0:5, 7]))
+    assert all(map(lambda x: x % 1 == 0, dummy_X_hat[0:5, 13]))
+    assert all(dummy_X_hat[:, 14]) in [0, 1]
+    assert all(dummy_X_hat[:, 35]) in [0, 1]
 
     for alg in range(num_algs):
         cur_alg = algs[alg]
@@ -89,19 +100,15 @@ if __name__ == '__main__':
             exit("ERROR: Invalid algorithm {0} selected!!!".format(cur_alg))
         cur_mdl.factorize()
 
-
         F = np.transpose(cur_mdl.W)
         X_hat = np.dot(np.dot(test_set_missing, np.linalg.pinv(F)), F)
         #Threshold certain feature values  as appropriate after factorizing
-        #TODO: sanitize_features was made before realizing we could transpose back,
-        #so it assumes a matrix of m X n, which is why we transpose here
-        #May want to adjust the indices instead
         sanitize_features(X_hat, float_to_int_idxs, float_to_binary_idxs)
 
         #Compute the current algorithm error across all of the samples
         cur_alg_errors = []
         for i in range(test_size):
-            cur_alg_errors.append(np.linalg.norm(X_hat[i, :] - test_set_missing[i, :], ord=2))
+            cur_alg_errors.append(np.linalg.norm(X_hat[i, :] - test_set[i, :], ord=2))
         alg_error[alg] = np.mean(np.array(cur_alg_errors))
         alg_std[alg] = np.std(np.array(cur_alg_errors))
 
