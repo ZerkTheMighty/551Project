@@ -14,7 +14,7 @@ def sanitize_features(X, float_to_int_idxs, float_to_binary_idxs):
     """
     Sanitize the matrix X by rounding floats to ints and thresholding floats
     to binary variables at the provided indices of X's feature vectors.
-    Assumes X is of the format features X samples
+    Assumes X is of the format samples X features
     """
     num_samples = X.shape[0]
     for index in float_to_int_idxs:
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     #To ensure re-running the experiment will yield the same results
     np.random.seed(0)
 
-    #Indexes into the feature vector that need to be thresholded to valid Values
+    #Indexes into the feature vector that need to be thresholded to valid values
     #After the matrix is reconstructed
     #Corresponds to temperature and age, respectively
     float_to_int_idxs = [7, 13]
@@ -64,8 +64,8 @@ if __name__ == '__main__':
     #H = transpose(P)
 
     #Thus, W * H is an m X k * k X n = m X n result, instead of the expected n X k
-    #Therefore, we need to transpose our  data matrix, prior to factorizing, then
-    #transpose the output back to use the formulas as writtent in our initial draft
+    #Therefore, we need to transpose our data matrix, prior to factorizing, then
+    #transpose the output back to use the formulas as written in our initial draft
     train_set = np.transpose(train_set)
 
     #Remove some of the data from the test set
@@ -86,6 +86,7 @@ if __name__ == '__main__':
     assert all(dummy_X_hat[:, 14]) in [0, 1]
     assert all(dummy_X_hat[:, 35]) in [0, 1]
 
+    #Run the main experiment
     for alg in range(num_algs):
         cur_alg = algs[alg]
         print(('Running on train={0} and test={1} samples for algorithm: {2}, with {3} factors').format(train_set.shape[1], test_set.shape[0], cur_alg, num_factors))
