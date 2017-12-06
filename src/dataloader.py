@@ -8,7 +8,7 @@ def load_nerve_data(trainsize, testsize):
     filename = '../datasets/nerveData.csv'
     dataset = loadcsv(filename)
     trainset, testset = splitdataset(dataset, trainsize, testsize, outputfirst=True)
-    return dataset, trainset, testset
+    return trainset, testset
 
 ####### Helper functions
 def loadcsv(filename):
@@ -27,17 +27,4 @@ def splitdataset(dataset, trainsize, testsize, testdataset=None, featureoffset=N
 
     Xtrain = dataset[randindices[0:trainsize], :]
     Xtest = dataset[randindices[trainsize:trainsize+testsize], :]
-
-    #TODO: Consider if we want to do this for our data set. My first reaction is no, since I'm guessing the code below
-    #assumes a supervised prediction problem
-
-    # Normalize features, with maximum value in training set
-    # as realistically, this would be the only possibility
-
-    # for ii in range(Xtrain.shape[1]):
-    #     maxval = np.max(np.abs(Xtrain[:,ii]))
-    #     if maxval > 0:
-    #         Xtrain[:,ii] = np.divide(Xtrain[:,ii], maxval)
-    #         Xtest[:,ii] = np.divide(Xtest[:,ii], maxval)
-
     return (Xtrain, Xtest)
