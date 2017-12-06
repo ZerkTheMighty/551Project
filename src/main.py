@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from pymf import pca, cmeans, aa
 
 
-def sanitize_features(X, float_to_int_idxs, float_to_binary_idxs):
+def threshold_features(X, float_to_int_idxs, float_to_binary_idxs):
     """
     Sanitize the matrix X by rounding floats to ints and thresholding floats
     to binary variables at the provided indices of X's feature vectors.
@@ -31,10 +31,6 @@ def sanitize_features(X, float_to_int_idxs, float_to_binary_idxs):
 
 
 if __name__ == '__main__':
-
-
-    #plt.scatter([x for x in range(10)], np.random.rand(10), alpha=0.4)
-    #plt.show()
 
     epsilon = 1.0e-6
     train_size = 125
@@ -86,7 +82,7 @@ if __name__ == '__main__':
 
     #Ensure that the right features are getting thresholded to the right values
     dummy_X_hat = np.dot(cur_mdl.W, cur_mdl.H)
-    sanitize_features(dummy_X_hat, float_to_int_idxs, float_to_binary_idxs)
+    threshold_features(dummy_X_hat, float_to_int_idxs, float_to_binary_idxs)
     assert all(map(lambda x: x % 1 == 0, dummy_X_hat[:, 7]))
     assert all(map(lambda x: x % 1 == 0, dummy_X_hat[:, 13]))
     assert all(dummy_X_hat[:, 14]) in [0, 1]
@@ -109,8 +105,7 @@ if __name__ == '__main__':
 
         F = np.transpose(cur_mdl.W)
         X_hat = np.dot(np.dot(test_set_missing, np.linalg.pinv(F)), F)
-        #Threshold certain feature values as appropriate after factorizing
-        sanitize_features(X_hat, float_to_int_idxs, float_to_binary_idxs)
+        threshold_features(X_hat, float_to_int_idxs, float_to_binary_idxs)
 
         #Compute the current algorithm error across all of the samples
         cur_alg_errors = []
