@@ -124,7 +124,7 @@ if __name__ == '__main__':
         cur_mdl.factorize()
 
         F = np.transpose(cur_mdl.W)
-        X_hat = np.dot(np.dot(test_set, np.linalg.pinv(F)), F)
+        X_hat = np.dot(np.dot(test_set_missing, np.linalg.pinv(F)), F)
         threshold_features(X_hat, float_to_int_idxs, float_to_binary_idxs)
 
         #Compute the current algorithm error across all of the samples
