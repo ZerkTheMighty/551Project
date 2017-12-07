@@ -29,33 +29,43 @@ def threshold_features(X, float_to_int_idxs, float_to_binary_idxs):
             else:
                 X[sample, index] = 0
 
-
 if __name__ == '__main__':
 
+    #Feature indices
+    TEMPERATURE_INDX = 7
+    AGE_INDX = 13
+    SEX_INDX = 14
+    NERVE_TYPE_INDX = 35
+    HYPERPOL_IV_INDX = 24
+    REFRACTORINESS_2_MS = 28
+    REFRACTORINESS_2_POINT_5_MS = 25
+    TEh_OVERSHOOT = 20
+
+    #Parameters
     epsilon = 1.0e-6
     train_size = 125
     test_size = 40
     num_factors = 3
     max_factors = 36
-    percent_missing_data = 0.10 #Percentage of data deleted from the test set to simulate missing data
-    graph_colours = ['r', 'g', 'b']
     algs = ['pca', 'cmeans', 'aa']
     num_algs = len(algs)
     alg_errors = [[] for alg in range(num_algs)]
     alg_error_mean = [[] for alg in range(num_algs)]
     alg_error_std = [[] for alg in range(num_algs)]
+
+    #NOTE: REFRACTORINESS_2_POINT_5_MS must come after REFRACTORINESS_2_MS in the missing_feature_indxs list
+    missing_feature_indxs = [HYPERPOL_IV_INDX, REFRACTORINESS_2_MS, REFRACTORINESS_2_POINT_5_MS , TEh_OVERSHOOT] #Features from which data is randomly deleted in the test set
+    percent_missing_data = [0.175, 0.30, 0.0625, 0.047]
+
     #To ensure re-running the experiment will yield the same results
     np.random.seed(0)
 
     #Indexes into the feature vector that need to be thresholded to valid values
     #After the matrix is reconstructed
-    #Corresponds to temperature and age, respectively
-    float_to_int_idxs = [7, 13]
-    #Corresponds to sex and nerve type (leg or arm), respectively
-    float_to_binary_idxs = [14, 35]
+    float_to_int_idxs = [TEMPERATURE_INDX, AGE_INDX]
+    float_to_binary_idxs = [SEX_INDX, NERVE_TYPE_INDX]
 
     train_set, test_set = dtl.load_nerve_data(train_size, test_size)
-    rand_test_missing_indices = np.random.choice(test_set.shape[0], int(round(test_size * percent_missing_data)), replace=False)
 
     #NOTE: #In pymf the matrix X is factorized such that X = W * H, where
     #W : "m x k" matrix of basis vectors
@@ -70,10 +80,20 @@ if __name__ == '__main__':
     #transpose the output back to use the formulas as written in our initial draft
     train_set = np.transpose(train_set)
 
-    #Remove some of the data from the test set
-    test_set_missing = test_set[:]
-    #TODO: How do we want to represent missing data, just set to 0?
-    test_set_missing[rand_test_missing_indices, :] = 0
+    #Remove some of the data from a copy of the test set
+    test_set_missing = np.array(list(test_set))
+    for (feature_indx, missing_data_percent) in zip(missing_feature_indxs, percent_missing_data):
+
+        #We need to enforce the constraint that missing refractory feature data at 2.5MS is a subset of the 2MS samples,
+        if feature_indx != REFRACTORINESS_2_POINT_5_MS:
+            samples_to_modify_indxs = np.random.choice(test_size, int(round(test_size * missing_data_percent)), replace=False)
+        else:
+            samples_to_modify_indxs = np.random.choice(refractory_2_ms_samples, int(round(test_size * missing_data_percent)), replace=False)
+
+        #We save the indices used for deleting refractory feature data at 2MS
+        if feature_indx == REFRACTORINESS_2_MS:
+            refractory_2_ms_samples = samples_to_modify_indxs
+        test_set_missing[samples_to_modify_indxs, feature_indx] = 0
 
     #Ensure that pca is behaving as expected: that is, that the factorization error using all k factors is minimal
     cur_mdl = pca.PCA(train_set, num_bases=max_factors)
@@ -104,7 +124,7 @@ if __name__ == '__main__':
         cur_mdl.factorize()
 
         F = np.transpose(cur_mdl.W)
-        X_hat = np.dot(np.dot(test_set_missing, np.linalg.pinv(F)), F)
+        X_hat = np.dot(np.dot(test_set, np.linalg.pinv(F)), F)
         threshold_features(X_hat, float_to_int_idxs, float_to_binary_idxs)
 
         #Compute the current algorithm error across all of the samples
@@ -118,6 +138,8 @@ if __name__ == '__main__':
     print("Displaying the results for all algorithms...")
     for alg in range(num_algs):
         print("Alg: {0} Error: {1} Standard Deviation: {2}").format(algs[alg], alg_error_mean[alg], alg_error_std[alg])
+        print("Error Values: " + str(alg_errors[alg]))
+        print("\n")
 
     #Set up the boxplot
     x_vals = [[] for alg in range(num_algs)]
