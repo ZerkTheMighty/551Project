@@ -75,7 +75,7 @@ if __name__ == '__main__':
     #W = transpose(F)
     #H = transpose(P)
 
-    #Thus, W * H is an m X k * k X n = m X n result, instead of the expected n X k
+    #Thus, W * H is an m X k * k X n = m X n result, instead of the expected n X m
     #Therefore, we need to transpose our data matrix, prior to factorizing, then
     #transpose the output back to use the formulas as written in our initial draft
     train_set = np.transpose(train_set)
